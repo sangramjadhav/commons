@@ -23,7 +23,7 @@ import java.io.IOException;
 import javax.naming.NamingException;
 
 public class LdapAuthTest {
-    private String user = "";
+    private String user = "uid=riemann,dc=example,dc=com";
     private char[] pass = "password".toCharArray();
 
     @Test
@@ -32,7 +32,7 @@ public class LdapAuthTest {
         auth.setSsl(false);
         auth.setLdapURL(
                 "ldap://ldap.forumsys.com");
-        auth.setBaseDN("cn=read-only-admin,dc=example,dc=com");
+        auth.setBaseDN("dc=example,dc=com");
         auth.setAuthType(LdapAuth.AUTH_TYPE.SIMPLE);
         boolean res = auth.autenticate(user, pass);
         Assert.assertTrue(res);
@@ -43,7 +43,7 @@ public class LdapAuthTest {
         LdapAuth auth = new LdapAuth();
         auth.setSsl(false);
         auth.setLdapURL("ldap://ldap.forumsys.com");
-        auth.setBaseDN("cn=read-only-admin,dc=example,dc=com");
+        auth.setBaseDN("ou=mathematicians,dc=example,dc=com");
         auth.setAuthType(LdapAuth.AUTH_TYPE.SIMPLE);
         auth.setFollowReferrals(true);
         boolean res = auth.autenticate(user, pass, "mathematicians");
