@@ -44,11 +44,7 @@ import javax.net.ssl.SSLSession;
 
 public class LdapAuth {
 
-    public static final String SEARCH_BY_SAM_ACCOUNT_NAME = "(sAMAccountName=%s)";
-    public static final String SEARCH_GROUP_BY_GROUP_CN = "(&(objectCategory=group)(cn={0}))";
-    private static final String MEMBER_OF = "memberOf";
-    private static final String[] attrIdsToSearch = new String[]{MEMBER_OF};
-
+    /** Active Directory Authentication types. May need some extra setup for Kerberos/GSSAPI */
     public enum AUTH_TYPE {
         NONE("none"), SIMPLE("simple"), DIGEST_MD5("DIGEST-MD5"), GSSAPI("GSSAPI") ;
         
@@ -62,7 +58,13 @@ public class LdapAuth {
             return this.value;
         }
     };
-    
+
+    private static final String REFERREL_FOLLOW = "follow";
+    private static final String SEARCH_BY_SAM_ACCOUNT_NAME = "(sAMAccountName=%s)";
+    private static final String SEARCH_GROUP_BY_GROUP_CN = "(&(objectCategory=group)(cn={0}))";
+    private static final String MEMBER_OF = "memberOf";
+    private static final String[] attributesForSearch = new String[]{MEMBER_OF};
+        
     private boolean ssl;
     private String ldapURL;
     private String baseDN;
@@ -128,7 +130,7 @@ public class LdapAuth {
             }
             ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, authType.getValue());
             if(followReferrals){
-                ctx.addToEnvironment(Context.REFERRAL, "follow");
+                ctx.addToEnvironment(Context.REFERRAL, REFERREL_FOLLOW);
             }
             if(null == login || login.isEmpty()){
                 ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, this.baseDN);
@@ -198,7 +200,7 @@ public class LdapAuth {
         String filter = String.format(SEARCH_BY_SAM_ACCOUNT_NAME, login);
         SearchControls constraints = new SearchControls();
         constraints.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        constraints.setReturningAttributes(attrIdsToSearch);
+        constraints.setReturningAttributes(attributesForSearch);
         NamingEnumeration results = ctx.search(baseDN, filter, constraints);
         if (results == null || !results.hasMore()) {
             return Collections.EMPTY_SET;
@@ -216,7 +218,7 @@ public class LdapAuth {
 
         // Get the entry's attributes
         Attributes attrs = result.getAttributes();
-        Attribute attr = attrs.get(attrIdsToSearch[0]);
+        Attribute attr = attrs.get(attributesForSearch[0]);
 
         NamingEnumeration e = attr.getAll();
 
